@@ -1,4 +1,6 @@
-# Kubernetes playground
-[![Build Status](https://travis-ci.org/Abdennebi/kubernetes-playground.svg?branch=master)](https://travis-ci.org/Abdennebi/kubernetes-playground)
+# simple e-store application
 
-This lab will walk you through setting up Kubernetes to run and monitor Spring Boot application or any other type of applications.
+this is the "naive" version of a very simple e-store application using three microservices communicating with each others 
+with a very **hard coded** manner.
+
+The purpose is to show how we can evolve such an application to a more elegant one by applying all needed **Cloud Native Patterns**
