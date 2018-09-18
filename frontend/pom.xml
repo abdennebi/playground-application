@@ -7,8 +7,8 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>com.github.abdennebi</groupId>
-        <artifactId>online-store</artifactId>
+        <groupId>io.cloudnativestack</groupId>
+        <artifactId>playground</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
