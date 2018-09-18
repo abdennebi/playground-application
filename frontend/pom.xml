@@ -67,7 +67,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>cloudnativestack/frontend</image>
+                        <image>gcr.io/cloudnativestack-playground/frontend</image>
                     </to>
                     <container>
                         <useCurrentTimestamp>true</useCurrentTimestamp>
