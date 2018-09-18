@@ -15,7 +15,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/${PROJECT_ID}/product-service:${COMMIT_SHA}', '/workspace/product-service/target/jib-docker-context']
 images:
-  - 'gcr.io/${PROJECT_ID}/frontend-service:${COMMIT_SHA}'
+  - 'gcr.io/${PROJECT_ID}/frontend:${COMMIT_SHA}'
   - 'gcr.io/${PROJECT_ID}/stock-service:${COMMIT_SHA}'
   - 'gcr.io/${PROJECT_ID}/product-service:${COMMIT_SHA}'
 
