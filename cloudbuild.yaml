@@ -1,9 +1,4 @@
 steps:
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-    - 'auth'
-    - 'configure-docker'
-    - '-q'
   - name: 'gcr.io/cloud-builders/mvn'
     args:
       - 'compile'
