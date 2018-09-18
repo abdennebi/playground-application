@@ -62,11 +62,13 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <to>
-                        <image>gcr.io/cloudnativestack-playground/stock-service</image>
+                        <image>${container-registry-host}/stock-service</image>
                     </to>
-                    <args>
-                        <arg>--server.port=${PORT}</arg>
-                    </args>
+                    <container>
+                        <args>
+                            <arg>--server.port=${PORT}</arg>
+                        </args>
+                    </container>
                 </configuration>
             </plugin>
         </plugins>

@@ -21,7 +21,8 @@
         <java.version>1.8</java.version>
         <dependency.feign.version>9.7.0</dependency.feign.version>
         <dependency.springfox.version>2.9.2</dependency.springfox.version>
-        <plugin.jib.version>0.9.8</plugin.jib.version>
+        <plugin.jib.version>0.9.10</plugin.jib.version>
+        <container-registry-host>gcr.io/cloudnativestack-playground</container-registry-host>
     </properties>
 
     <modules>
