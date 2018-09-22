@@ -9,6 +9,106 @@ steps:
     args: ['build', '-t', 'gcr.io/${PROJECT_ID}/stock-service:${COMMIT_SHA}', '/workspace/stock-service/target/jib-docker-context']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/${PROJECT_ID}/product-service:${COMMIT_SHA}', '/workspace/product-service/target/jib-docker-context']
+
+  # Decrypt the file containing the key
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        gsutil cp gs://${PROJECT_ID}-playground-configs/id_rsa.enc id_rsa.enc
+
+        gcloud kms decrypt \
+          --ciphertext-file=id_rsa.enc \
+          --plaintext-file=/root/.ssh/id_rsa \
+          --location=global \
+          --keyring=playground-keyring \
+          --key=github-key
+    volumes:
+      - name: 'ssh'
+        path: /root/.ssh
+
+  # Set up git with key and domain.
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+    - '-c'
+    - |
+      chmod 600 /root/.ssh/id_rsa
+      cat <<EOF >/root/.ssh/config
+      Hostname github.com
+      IdentityFile /root/.ssh/id_rsa
+      EOF
+      gsutil cp gs://${PROJECT_ID}-playground-configs/known_hosts known_hosts
+      mv known_hosts /root/.ssh/known_hosts
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+  # Recursively apply the configuration files under the kubernetes
+  # directory.
+  - name: 'gcr.io/cloud-builders/gcloud'
+    env:
+      - 'KUBECONFIG=/kube/config'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        git clone git@github.com:cloudnativestack/playground-manifests-dev
+        cd playground-manifests-dev
+
+        cat <<EOF > patch-frontend.yaml
+        spec:
+          template:
+            spec:
+              containers:
+                - name: frontend
+                  image: gcr.io/${PROJECT_ID}/frontend:${COMMIT_SHA}
+        EOF
+
+        cat <<EOF > patch-product.yaml
+        spec:
+          template:
+            spec:
+              containers:
+                - name: product
+                  image: gcr.io/${PROJECT_ID}/product-service:${COMMIT_SHA}
+        EOF
+
+        cat <<EOF > patch-stock.yaml
+        spec:
+          template:
+            spec:
+              containers:
+                - name: stock
+                  image: gcr.io/${PROJECT_ID}/stock-service:${COMMIT_SHA}
+        EOF
+
+        kubectl patch --local -o yaml -f kubernetes/frontend-deployment.yaml -p "$(cat patch-frontend.yaml)" > frontend-deployment.yaml
+        mv frontend-deployment.yaml kubernetes/frontend-deployment.yaml
+        git add kubernetes/frontend-deployment.yaml
+
+        kubectl patch --local -o yaml -f kubernetes/product-deployment.yaml -p "$(cat patch-product.yaml)" > product-deployment.yaml
+        mv product-deployment.yaml kubernetes/product-deployment.yaml
+        git add kubernetes/product-deployment.yaml
+
+        kubectl patch --local -o yaml -f kubernetes/stock-deployment.yaml -p "$(cat patch-stock.yaml)" > stock-deployment.yaml
+        mv stock-deployment.yaml kubernetes/stock-deployment.yaml
+        git add kubernetes/stock-deployment.yaml
+
+        git commit -F- <<EOF
+        Update the playground-application
+        This commit updates the pipeline deployment container image to:
+            gcr.io/${PROJECT_ID}/frontend:${COMMIT_SHA}.
+            gcr.io/${PROJECT_ID}/product-service:${COMMIT_SHA}.
+            gcr.io/${PROJECT_ID}/stock-service:${COMMIT_SHA}.
+        Build ID: ${BUILD_ID}
+        EOF
+
+        git push origin master
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
 images:
   - 'gcr.io/${PROJECT_ID}/frontend:${COMMIT_SHA}'
   - 'gcr.io/${PROJECT_ID}/stock-service:${COMMIT_SHA}'
