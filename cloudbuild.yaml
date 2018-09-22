@@ -16,6 +16,9 @@ steps:
     args:
       - '-c'
       - |
+
+        mkdir -p /root/.ssh
+
         gsutil cp gs://${PROJECT_ID}-configs/id_rsa.enc id_rsa.enc
 
         gcloud kms decrypt \
@@ -24,35 +27,18 @@ steps:
           --location=global \
           --keyring=playground-keyring \
           --key=github-key
-    volumes:
-      - name: 'ssh'
-        path: /root/.ssh
 
-  # Set up git with key and domain.
-  - name: 'gcr.io/cloud-builders/git'
-    entrypoint: 'bash'
-    args:
-    - '-c'
-    - |
-      chmod 600 /root/.ssh/id_rsa
-      cat <<EOF >/root/.ssh/config
-      Hostname github.com
-      IdentityFile /root/.ssh/id_rsa
-      EOF
-      gsutil cp gs://${PROJECT_ID}-configs/known_hosts known_hosts
-      mv known_hosts /root/.ssh/known_hosts
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
-  # Recursively apply the configuration files under the kubernetes
-  # directory.
-  - name: 'gcr.io/cloud-builders/gcloud'
-    env:
-      - 'KUBECONFIG=/kube/config'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
+        chmod 600 /root/.ssh/id_rsa
+
+        cat <<EOF >/root/.ssh/config
+        Hostname github.com
+        IdentityFile /root/.ssh/id_rsa
+        EOF
+
+        gsutil cp gs://${PROJECT_ID}-configs/known_hosts known_hosts
+        mv known_hosts /root/.ssh/known_hosts
+
+
         git clone git@github.com:cloudnativestack/playground-manifests-dev
         cd playground-manifests-dev
 
@@ -95,6 +81,9 @@ steps:
         mv stock-deployment.yaml kubernetes/stock-deployment.yaml
         git add kubernetes/stock-deployment.yaml
 
+        git config user.email "cloud-builder@cloudnativestack.io"
+        git config user.name "Cloud Builder"
+
         git commit -F- <<EOF
         Update the playground-application
         This commit updates the pipeline deployment container image to:
@@ -105,9 +94,6 @@ steps:
         EOF
 
         git push origin master
-    volumes:
-    - name: 'ssh'
-      path: /root/.ssh
 
 images:
   - 'gcr.io/${PROJECT_ID}/frontend:${COMMIT_SHA}'
