@@ -64,11 +64,6 @@
                     <to>
                         <image>${container-registry-host}/stock-service</image>
                     </to>
-                    <container>
-                        <args>
-                            <arg>--server.port=${PORT}</arg>
-                        </args>
-                    </container>
                 </configuration>
             </plugin>
         </plugins>

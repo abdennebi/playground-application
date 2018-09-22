@@ -65,11 +65,6 @@
                     <to>
                         <image>${container-registry-host}/product-service</image>
                     </to>
-                    <container>
-                        <args>
-                            <arg>--server.port=${PORT}</arg>
-                        </args>
-                    </container>
                 </configuration>
             </plugin>
         </plugins>

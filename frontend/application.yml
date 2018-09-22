@@ -1,8 +1,0 @@
-frontend.product.url: http://localhost:30081
-frontend.stock.url: http://localhost:30082
-
-spring:
-  application:
-    name: frontend
-server:
-  port: 30083
